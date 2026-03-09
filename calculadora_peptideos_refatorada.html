@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Peptídeos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen transition-colors duration-200">
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-6">
+            <div class="flex items-start gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center shrink-0">
+                    <i class="ph ph-flask text-brand-600 dark:text-brand-400 text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">CALCULADORA DE PEPTÍDEOS</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Marcelo Rocha Cortez • cálculo rápido de reconstituição e dose</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <section class="lg:col-span-3 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+                <div class="flex justify-between items-center gap-3 mb-6">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i class="ph ph-note-pencil"></i>
+                        Dados da reconstituição
+                    </h2>
+                    <button id="clear-btn" type="button" class="text-sm text-red-500 hover:text-red-700 transition-colors flex items-center gap-1">
+                        <i class="ph ph-trash"></i>
+                        Limpar campos
+                    </button>
+                </div>
+
+                <form id="peptide-form" class="space-y-5" novalidate>
+                    <div>
+                        <label for="peptideName" class="block text-sm font-medium mb-1">Nome do peptídeo</label>
+                        <input
+                            type="text"
+                            id="peptideName"
+                            list="peptide-suggestions"
+                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                            placeholder="Ex: GHK-Cu, Retatrutida, Tirzepatida"
+                        >
+                        <datalist id="peptide-suggestions">
+                            <option value="GHK-Cu"></option>
+                            <option value="Retatrutida"></option>
+                            <option value="Tirzepatida"></option>
+                            <option value="Semaglutida"></option>
+                            <option value="BPC-157"></option>
+                            <option value="TB-500"></option>
+                        </datalist>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="mg" class="block text-sm font-medium mb-1">Quantidade no frasco</label>
+                            <div class="relative">
+                                <input
+                                    type="number"
+                                    id="mg"
+                                    min="0.001"
+                                    step="0.001"
+                                    inputmode="decimal"
+                                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 pr-14 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                                    placeholder="Ex: 5"
+                                >
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mg</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">1 mg = 1000 mcg</p>
+                            <p id="error-mg" class="hidden text-xs text-red-500 mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label for="ml" class="block text-sm font-medium mb-1">Água bacteriostática</label>
+                            <div class="relative">
+                                <input
+                                    type="number"
+                                    id="ml"
+                                    min="0.01"
+                                    step="0.01"
+                                    inputmode="decimal"
+                                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 pr-14 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                                    placeholder="Ex: 2"
+                                >
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mL</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Volume usado na reconstituição</p>
+                            <p id="error-ml" class="hidden text-xs text-red-500 mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="mcg" class="block text-sm font-medium mb-1">Dose desejada</label>
+                            <div class="relative">
+                                <input
+                                    type="number"
+                                    id="mcg"
+                                    min="0.1"
+                                    step="0.1"
+                                    inputmode="decimal"
+                                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 pr-16 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                                    placeholder="Ex: 250"
+                                >
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mcg</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Dose por aplicação</p>
+                            <p id="error-mcg" class="hidden text-xs text-red-500 mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label for="syringe" class="block text-sm font-medium mb-1">Capacidade da seringa</label>
+                            <select
+                                id="syringe"
+                                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                            >
+                                <option value="100">100 unidades (1,0 mL)</option>
+                                <option value="50">50 unidades (0,5 mL)</option>
+                                <option value="30">30 unidades (0,3 mL)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Padrão U-100</p>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <section class="lg:col-span-2 space-y-4">
+                <div id="result-panel" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 relative overflow-hidden">
+                    <div id="result-overlay" class="absolute inset-0 bg-white/75 dark:bg-gray-800/85 backdrop-blur-[2px] flex items-center justify-center text-center p-6 z-10">
+                        <p class="text-gray-500 font-medium">Preencha os campos para calcular automaticamente.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="text-lg font-semibold mb-6 flex items-center gap-2">
+                            <i class="ph ph-check-circle text-green-500"></i>
+                            Resultado
+                        </h2>
+
+                        <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-5 text-center mb-6">
+                            <p class="text-sm text-green-800 dark:text-green-200 font-medium mb-1">Puxe a seringa até</p>
+                            <div id="res-units" class="text-5xl font-bold text-green-600 dark:text-green-400 mb-2">0,0</div>
+                            <p class="text-sm text-green-700 dark:text-green-300 font-semibold">unidades da seringa U-100</p>
+                        </div>
+
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <span class="text-gray-500 dark:text-gray-400">Dose calculada</span>
+                                <span id="res-dose" class="font-semibold text-right">0 mcg</span>
+                            </div>
+                            <div class="flex justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <span class="text-gray-500 dark:text-gray-400">Concentração final</span>
+                                <span id="res-concentration" class="font-medium text-right">0 mcg/mL</span>
+                            </div>
+                            <div class="flex justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <span class="text-gray-500 dark:text-gray-400">Volume correspondente</span>
+                                <span id="res-volume" class="font-medium text-right">0,000 mL</span>
+                            </div>
+                            <div class="flex justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <span class="text-gray-500 dark:text-gray-400">Capacidade selecionada</span>
+                                <span id="res-capacity" class="font-medium text-right">100 unidades</span>
+                            </div>
+                            <div class="flex justify-between gap-4 pb-2">
+                                <span class="text-gray-500 dark:text-gray-400">Rendimento estimado do frasco</span>
+                                <span class="font-medium text-brand-600 dark:text-brand-400 text-right"><span id="res-doses-left">0</span> doses completas</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 gap-3">
+                            <button id="copy-btn" type="button" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-lg transition-colors flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <i class="ph ph-copy"></i>
+                                <span id="btn-copy-text">Copiar</span>
+                            </button>
+                            <button id="reset-btn" type="button" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
+                                <i class="ph ph-arrow-counter-clockwise"></i>
+                                Reiniciar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-alert" class="hidden bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+                    <i class="ph ph-warning text-lg mt-0.5"></i>
+                    <span id="error-message">Há um problema com os valores informados.</span>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
+                    <h3 class="font-semibold mb-2 text-sm uppercase tracking-wide text-gray-500 dark:text-gray-400">Como a conta é feita</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-6">
+                        Concentração = (mg × 1000) ÷ mL. Depois, volume = dose em mcg ÷ concentração. Por fim, unidades da seringa = volume × 100.
+                    </p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const form = document.getElementById('peptide-form');
+        const peptideNameInput = document.getElementById('peptideName');
+        const mgInput = document.getElementById('mg');
+        const mlInput = document.getElementById('ml');
+        const mcgInput = document.getElementById('mcg');
+        const syringeInput = document.getElementById('syringe');
+        const clearBtn = document.getElementById('clear-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const resultOverlay = document.getElementById('result-overlay');
+        const resultPanel = document.getElementById('result-panel');
+        const errorAlert = document.getElementById('error-alert');
+        const errorMessage = document.getElementById('error-message');
+
+        const defaultPanelOpacityClass = 'opacity-60';
+        resultPanel.classList.add(defaultPanelOpacityClass);
+
+        let currentResult = null;
+
+        const fieldConfig = {
+            mg: {
+                input: mgInput,
+                error: document.getElementById('error-mg'),
+                label: 'Quantidade no frasco'
+            },
+            ml: {
+                input: mlInput,
+                error: document.getElementById('error-ml'),
+                label: 'Água bacteriostática'
+            },
+            mcg: {
+                input: mcgInput,
+                error: document.getElementById('error-mcg'),
+                label: 'Dose desejada'
+            }
+        };
+
+        function parseLocaleNumber(value) {
+            if (typeof value !== 'string') return Number(value);
+            return Number(value.replace(',', '.').trim());
+        }
+
+        function formatNumber(value, options = {}) {
+            return new Intl.NumberFormat('pt-BR', options).format(value);
+        }
+
+        function setFieldError(key, message = '') {
+            const field = fieldConfig[key];
+            const hasError = Boolean(message);
+
+            field.input.classList.toggle('border-red-500', hasError);
+            field.input.classList.toggle('focus:border-red-500', hasError);
+            field.input.classList.toggle('focus:ring-red-500', hasError);
+            field.error.textContent = message;
+            field.error.classList.toggle('hidden', !hasError);
+        }
+
+        function clearFieldErrors() {
+            Object.keys(fieldConfig).forEach((key) => setFieldError(key, ''));
+        }
+
+        function hideResultState() {
+            resultOverlay.classList.remove('hidden');
+            resultPanel.classList.add(defaultPanelOpacityClass);
+            copyBtn.disabled = true;
+            currentResult = null;
+        }
+
+        function showResultState() {
+            resultOverlay.classList.add('hidden');
+            resultPanel.classList.remove(defaultPanelOpacityClass);
+            copyBtn.disabled = false;
+        }
+
+        function showCapacityError(message) {
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+        }
+
+        function hideCapacityError() {
+            errorAlert.classList.add('hidden');
+            errorMessage.textContent = 'Há um problema com os valores informados.';
+        }
+
+        function resetResults() {
+            document.getElementById('res-units').textContent = '0,0';
+            document.getElementById('res-dose').textContent = '0 mcg';
+            document.getElementById('res-concentration').textContent = '0 mcg/mL';
+            document.getElementById('res-volume').textContent = '0,000 mL';
+            document.getElementById('res-capacity').textContent = `${syringeInput.value} unidades`;
+            document.getElementById('res-doses-left').textContent = '0';
+        }
+
+        function validateInputs(values) {
+            clearFieldErrors();
+
+            let valid = true;
+
+            if (!Number.isFinite(values.mg) || values.mg <= 0) {
+                setFieldError('mg', 'Informe um valor maior que zero.');
+                valid = false;
+            }
+
+            if (!Number.isFinite(values.ml) || values.ml <= 0) {
+                setFieldError('ml', 'Informe um valor maior que zero.');
+                valid = false;
+            }
+
+            if (!Number.isFinite(values.mcg) || values.mcg <= 0) {
+                setFieldError('mcg', 'Informe um valor maior que zero.');
+                valid = false;
+            }
+
+            return valid;
+        }
+
+        function calculate() {
+            const values = {
+                peptideName: peptideNameInput.value.trim() || 'Peptídeo sem nome',
+                mg: parseLocaleNumber(mgInput.value),
+                ml: parseLocaleNumber(mlInput.value),
+                mcg: parseLocaleNumber(mcgInput.value),
+                syringe: Number(syringeInput.value)
+            };
+
+            document.getElementById('res-capacity').textContent = `${values.syringe} unidades`;
+            hideCapacityError();
+
+            const hasAnyInput = [mgInput.value, mlInput.value, mcgInput.value, peptideNameInput.value].some((value) => String(value).trim() !== '');
+
+            if (!hasAnyInput) {
+                clearFieldErrors();
+                hideResultState();
+                resetResults();
+                return;
+            }
+
+            if (!validateInputs(values)) {
+                hideResultState();
+                resetResults();
+                return;
+            }
+
+            const totalMcg = values.mg * 1000;
+            const concentration = totalMcg / values.ml;
+            const volumeNeeded = values.mcg / concentration;
+            const units = volumeNeeded * 100;
+            const dosesLeft = Math.floor(totalMcg / values.mcg);
+
+            if (units > values.syringe) {
+                hideResultState();
+                resetResults();
+                showCapacityError(`A dose calculada (${formatNumber(units, { maximumFractionDigits: 1 })} unidades) excede a capacidade da seringa escolhida (${values.syringe} unidades). Aumente o volume de diluição ou selecione uma seringa maior.`);
+                return;
+            }
+
+            const formattedUnits = Number.isInteger(units)
+                ? formatNumber(units, { maximumFractionDigits: 0 })
+                : formatNumber(units, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+            document.getElementById('res-units').textContent = formattedUnits;
+            document.getElementById('res-dose').textContent = `${formatNumber(values.mcg, { maximumFractionDigits: 3 })} mcg`;
+            document.getElementById('res-concentration').textContent = `${formatNumber(concentration, { maximumFractionDigits: 2 })} mcg/mL`;
+            document.getElementById('res-volume').textContent = `${formatNumber(volumeNeeded, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} mL`;
+            document.getElementById('res-doses-left').textContent = formatNumber(dosesLeft, { maximumFractionDigits: 0 });
+
+            currentResult = {
+                name: values.peptideName,
+                mg: values.mg,
+                ml: values.ml,
+                mcg: values.mcg,
+                syringe: values.syringe,
+                units,
+                formattedUnits,
+                concentration,
+                volumeNeeded,
+                dosesLeft
+            };
+
+            showResultState();
+        }
+
+        async function copyResults() {
+            if (!currentResult) return;
+
+            const textToCopy = [
+                `Peptídeo: ${currentResult.name}`,
+                `Frasco: ${formatNumber(currentResult.mg, { maximumFractionDigits: 3 })} mg`,
+                `Água bacteriostática: ${formatNumber(currentResult.ml, { maximumFractionDigits: 3 })} mL`,
+                `Dose desejada: ${formatNumber(currentResult.mcg, { maximumFractionDigits: 3 })} mcg`,
+                `Concentração: ${formatNumber(currentResult.concentration, { maximumFractionDigits: 2 })} mcg/mL`,
+                `Volume correspondente: ${formatNumber(currentResult.volumeNeeded, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} mL`,
+                `Puxar na seringa U-100: ${currentResult.formattedUnits} unidades`
+            ].join('\n');
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+            } catch {
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+
+            const btnText = document.getElementById('btn-copy-text');
+            btnText.textContent = 'Copiado!';
+            setTimeout(() => {
+                btnText.textContent = 'Copiar';
+            }, 2000);
+        }
+
+        function clearForm() {
+            form.reset();
+            clearFieldErrors();
+            hideCapacityError();
+            hideResultState();
+            resetResults();
+            peptideNameInput.focus();
+        }
+
+        [peptideNameInput, mgInput, mlInput, mcgInput, syringeInput].forEach((element) => {
+            element.addEventListener('input', calculate);
+            element.addEventListener('change', calculate);
+        });
+
+        clearBtn.addEventListener('click', clearForm);
+        resetBtn.addEventListener('click', clearForm);
+        copyBtn.addEventListener('click', copyResults);
+
+        resetResults();
+        hideResultState();
+    </script>
+</body>
+</html>
